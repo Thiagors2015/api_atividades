@@ -1,10 +1,33 @@
 from flask import Flask,request
 from flask_restful import Resource,Api
-from models import Pessoas,Atividades
+from models import Pessoas,Atividades,Usuarios
+from flask_httpauth import HTTPBasicAuth
+
+auth=HTTPBasicAuth()
 app=Flask(__name__)
 api=Api(app)
 
+#USUARIOS={
+#    'rafael':'123',
+ #   'thiago':'321'
+#}
+
+#@auth.verify_password
+#def verificacao(login,senha):
+#    if not (login,senha):
+#        return False
+#    return USUARIOS.get(login)==senha
+
+@auth.verify_password
+def verificacao(login,senha):
+    if not (login,senha):
+        return False
+    return Usuarios.query.filter_by(login=login,senha=senha).first()
+
+
+
 class Pessoa(Resource):
+    @auth.login_required
     def get(self,nome):
         try:
             pessoa=Pessoas.query.filter_by(nome=nome).first()
@@ -74,7 +97,7 @@ class Atividade(Resource):
             atividades.delete()
             response={'status':'sucesso','mensagem':'atividade {} excluída com sucesso'.format(nome)}
         except AttributeError:
-            response = {'status': 'erro', 'Pessoa {} não foi encontrada ou não possuí atividades'.format(nome)}
+            response = {'status': 'erro','mensagem':'Pessoa {} não foi encontrada ou não possuí atividades'.format(nome)}
         except Exception:
             response = {'status': 'erro', 'mensagem': 'erro desconhecido'}
         return response
@@ -87,7 +110,7 @@ class Atividade(Resource):
                        'nome':i.nome,
                        'pessoa':i.pessoa.nome} for i in atividade]
         except AttributeError:
-            response={'status':'erro','Pessoa {} não foi encontrada ou não possuí atividades'.format(nome)}
+            response={'status':'erro','mensagem':'Pessoa {} não foi encontrada ou não possuí atividades'.format(nome)}
         except Exception:
             response={'status':'erro','mensagem':'erro desconhecido'}
         return response
@@ -123,7 +146,7 @@ class AlterarSituacao(Resource):
                     else:
                         atividade.status=dados['status']
 
-                        response={'status':'sucesso','mensagem':'Situação alterada com sucesso')}
+                        response={'status':'sucesso','mensagem':'Situação alterada com sucesso'}
                 else:
 
                     response = {'status': 'erro',
