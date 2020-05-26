@@ -30,6 +30,7 @@ class Atividades(Base):
     nome=Column(String(80))
     pessoa_id=Column(Integer,ForeignKey('pessoas.id'))
     pessoa=relationship("Pessoas")
+    status=Column(String(9),default='Pendente')
 
     def __repr__(self):
         return '<Atividade {}>'.format(self.nome)
